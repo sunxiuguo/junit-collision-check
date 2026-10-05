@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="checkout" tests="3" failures="0">
+  <testcase classname="cart.CheckoutTest" name="rejects_expired_coupon"/>
+  <testcase classname="cart.CheckoutTest" name="accepts_valid_coupon"/>
+  <testcase classname="cart.CheckoutTest" name="accepts_empty_cart"/>
+</testsuite>

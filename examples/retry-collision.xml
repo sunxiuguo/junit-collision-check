@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="checkout" tests="3" failures="1">
+  <testcase classname="cart.CheckoutTest" name="rejects_expired_coupon"/>
+  <testcase classname="cart.CheckoutTest" name="rejects_expired_coupon"/>
+  <testcase classname="cart.CheckoutTest" name="rejects_expired_coupon">
+    <failure message="Synthetic failure">Expected coupon rejection</failure>
+  </testcase>
+</testsuite>

@@ -1,0 +1,3 @@
+<testsuite name="linux">
+  <testcase classname="api.Health" name="responds"/>
+</testsuite>

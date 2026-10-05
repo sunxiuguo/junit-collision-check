@@ -1,0 +1,3 @@
+<testsuite name="windows">
+  <testcase classname="api.Health" name="responds"><error>Example only</error></testcase>
+</testsuite>
