@@ -13,7 +13,9 @@ and highlights conflicting outcomes before a report consumer discards a duplicat
 
 ## Try the failure in 30 seconds
 
-Requires Python 3.10+ with Expat 2.6.0+. Use a current, patched Python release.
+Requires Python 3.12+ with Expat 2.6.0+. Use a current, patched Python release.
+The first hosted validation found older Expat builds in Windows/macOS Python 3.10;
+initial supported versions start at 3.12 rather than bypassing the XML safety check.
 From this source checkout, no installation is needed:
 
 ```sh
@@ -181,8 +183,8 @@ python -m compileall -q junit_collision_check
 
 Tests cover multi-file collisions, valid adjacent controls, scopes, namespaces,
 UTF-16, invalid reports, DTD/entity rejection, limits, CLI exit codes, privacy and
-unchanged inputs. CI runs the suite on Linux, macOS and Windows with Python 3.10,
-3.12 and 3.14. Hosted results are visible in the Actions tab; a workflow definition
+unchanged inputs. CI runs the suite on Linux, macOS and Windows with Python 3.12,
+3.13 and 3.14. Hosted results are visible in the Actions tab; a workflow definition
 alone is not evidence of a passing run.
 
 [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)

@@ -7,7 +7,7 @@ name = "junit-collision-check"
 version = "0.1.0"
 description = "Catch duplicate JUnit test identities and conflicting outcomes across shard reports"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [{name = "sunxiuguo"}]
 keywords = ["junit", "ci", "test-reports", "sharding", "gitlab"]
