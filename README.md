@@ -129,6 +129,11 @@ python tools/junit-collision-check/scripts/check_reports.py 'test-results/**/*.x
 This helper finds the package beside itself without requiring a global install.
 Pin the tools checkout to a reviewed commit. There is no automatic code downloader.
 
+For a runnable example with **real pytest-generated reports**, see
+[Keep test failures and identity collisions as separate gates](examples/pytest-ci/).
+It verifies disjoint shards, overlapping shards, unique failures and conflicting
+attempts, and includes a GitHub Actions recipe that preserves test failures.
+
 ## Python API
 
 ```python

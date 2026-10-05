@@ -1,0 +1,2 @@
+# Optional adoption example only; not a runtime dependency of the auditor.
+pytest==9.1.1
