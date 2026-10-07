@@ -134,6 +134,11 @@ For a runnable example with **real pytest-generated reports**, see
 It verifies disjoint shards, overlapping shards, unique failures and conflicting
 attempts, and includes a GitHub Actions recipe that preserves test failures.
 
+For a **synthetic link-checker example**, see
+[Keep distinct link occurrences visible](examples/link-occurrence/). It shows why
+different testcase `file` attributes do not distinguish identical names, and why
+an identity-clean report can still contain failed tests.
+
 ## Python API
 
 ```python
