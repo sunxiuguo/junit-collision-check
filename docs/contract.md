@@ -13,6 +13,14 @@ locations are rejected. Suite `tests`/`failures` counters are not trusted or aud
 Nested `testsuites` wrappers are unsupported. Consistently namespaced documents are
 accepted; mixing namespaces for known structural/result elements is rejected.
 
+## Opt-in GitLab profile
+
+`identity="gitlab"` models the pinned source key and status buckets described in
+[the consumer evidence](../examples/gitlab-consumer/). It requires named suites
+and a narrower XML subset; unsupported profile inputs fail explicitly. Its
+collision identity contains `consumer_key_sha256` and `outcome`; tuple modes
+retain their existing fields. Default identity and scope are unchanged.
+
 ## Stable codes
 
 Collision codes:
@@ -24,6 +32,7 @@ Input diagnostic codes:
 - `NO_REPORTS`, `EMPTY_REPORT_SET`, `DUPLICATE_SOURCE`
 - `INVALID_XML`, `UNSUPPORTED_ROOT`, `UNSUPPORTED_STRUCTURE`, `MIXED_NAMESPACE`
 - `MISSING_TEST_NAME`, `CONFLICTING_RESULT_ELEMENTS`
+- `UNSUPPORTED_GITLAB_PROFILE`
 - `FORBIDDEN_DTD`, `FORBIDDEN_ENTITY`, `UNSAFE_XML_RUNTIME`
 - `FILE_SIZE_LIMIT`, `FILE_COUNT_LIMIT`, `CASE_LIMIT`, `TOTAL_LIMIT`, `DEPTH_LIMIT`, `IDENTITY_LIMIT`
 

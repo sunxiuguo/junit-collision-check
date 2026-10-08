@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- Synthetic: distinct tuples can coincide in a consumer's joined-string key. -->
+<testsuite name="synthetic">
+  <testcase classname="A_B" name="C"><failure message="synthetic first" /></testcase>
+  <testcase classname="A" name="B_C"><failure message="synthetic second" /></testcase>
+</testsuite>

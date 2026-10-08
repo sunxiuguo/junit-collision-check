@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- Synthetic: distinct file metadata does not distinguish these identities. -->
+<testsuite name="synthetic">
+  <testcase classname="Links" name="same" file="a.md"><failure message="synthetic first" /></testcase>
+  <testcase classname="Links" name="same" file="b.md"><failure message="synthetic second" /></testcase>
+</testsuite>

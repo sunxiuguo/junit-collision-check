@@ -68,6 +68,11 @@ the installed CLI itself has no dependencies beyond Python's standard library.
 
 ### Choose the right identity
 
+For the pinned GitLab source consumer, see the opt-in
+[`--identity gitlab` profile and observed controls](examples/gitlab-consumer/).
+It models joined-string key collisions and separate status buckets; it does not
+claim hosted compatibility. Existing default tuple semantics are unchanged.
+
 The default is the exact pair `(classname, name)` across all inputs. Suite labels
 and filenames do not distinguish tests in this mode. A missing classname is `""`.
 Case, whitespace and Unicode are preserved, not normalized.

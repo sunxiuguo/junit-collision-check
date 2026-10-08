@@ -24,7 +24,10 @@ def render_text(report):
              f"Identity: {report['identity_mode']}; scope: {report['scope']}"]
     for collision in report["collisions"]:
         identity = collision["identity"]
-        lines.append(f"{collision['code']}: {_quoted(identity['classname'])} / {_quoted(identity['name'])}")
+        if report["identity_mode"] == "gitlab":
+            lines.append(f"{collision['code']}: GitLab key {_quoted(identity['consumer_key_sha256'])} / {_quoted(identity['outcome'])}")
+        else:
+            lines.append(f"{collision['code']}: {_quoted(identity['classname'])} / {_quoted(identity['name'])}")
         if collision["potential_hidden_failure"]:
             lines.append("  A consumer keeping one duplicate could hide a reported failure")
         for item in collision["occurrences"]:
@@ -75,7 +78,7 @@ def main(argv=None):
         description="Find JUnit identity collisions across local XML reports without changing them.")
     parser.add_argument("reports", nargs="+", help="Report paths or quoted glob patterns (no URLs)")
     parser.add_argument("--format", choices=["text", "json"], default="text")
-    parser.add_argument("--identity", choices=["class-name", "suite-class-name"], default="class-name")
+    parser.add_argument("--identity", choices=["class-name", "suite-class-name", "gitlab"], default="class-name")
     parser.add_argument("--scope", choices=["all", "file"], default="all",
                         help="Use file only if every input is a separate result population")
     parser.add_argument("--version", action="version", version=__version__)

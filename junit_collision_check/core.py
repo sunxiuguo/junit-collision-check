@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 from dataclasses import asdict, dataclass
+import hashlib
 from typing import BinaryIO, Iterable
 from xml.parsers import expat
 
@@ -54,11 +55,23 @@ _RETRY = {"flakyFailure", "flakyError", "rerunFailure", "rerunError"}
 _STRUCTURE = {"testsuites", "testsuite", "testcase"} | _TERMINAL | _RETRY
 
 
+_GITLAB_ATTRIBUTES = {
+    "testsuites": {"name", "time", "tests", "failures", "errors", "skipped", "disabled"},
+    "testsuite": {"name", "time", "tests", "failures", "errors", "skipped", "disabled",
+                  "timestamp", "hostname", "package", "id", "file", "assertions"},
+    "testcase": {"name", "classname", "file", "line", "time", "assertions"},
+    "failure": {"message"}, "error": {"message"}, "skipped": {"message"},
+    "system-out": set(), "system-err": set(), "properties": set(),
+    "property": {"name", "value"},
+}
+
+
 def _split_name(name):
     return name.rsplit("}", 1) if "}" in name else ("", name)
 
 
-def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None):
+def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None, *,
+                 gitlab_profile: bool = False):
     """Return (cases, byte_count) for one complete supported report.
 
     Raises InputError and discards the entire file on malformed/unsupported input.
@@ -94,6 +107,11 @@ def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None):
         nonlocal current, root_namespace
         namespace, name = _split_name(expanded)
         parent = stack[-1] if stack else None
+        if gitlab_profile:
+            if namespace or name not in _GITLAB_ATTRIBUTES or set(attrs) - _GITLAB_ATTRIBUTES[name]:
+                fail("UNSUPPORTED_GITLAB_PROFILE", "Element or attribute is outside the supported GitLab profile")
+            if name == "testsuite" and not attrs.get("name", "").strip():
+                fail("UNSUPPORTED_GITLAB_PROFILE", "GitLab profile requires explicitly named suites")
         if not stack:
             if name not in {"testsuite", "testsuites"}:
                 fail("UNSUPPORTED_ROOT", "Expected a testsuite or testsuites root")
@@ -145,6 +163,11 @@ def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None):
             suites.pop()
         stack.pop()
 
+    def character_data(text):
+        if gitlab_profile and stack and stack[-1] in {"testsuites", "testsuite", "testcase"} and text.strip():
+            fail("UNSUPPORTED_GITLAB_PROFILE", "Structural text is outside the supported GitLab profile")
+
+    parser.CharacterDataHandler = character_data if gitlab_profile else None
     parser.StartElementHandler = start
     parser.EndElementHandler = end
     parser.StartDoctypeDeclHandler = reject_doctype
@@ -178,9 +201,10 @@ def inspect_reports(reports: Iterable[tuple[str, BinaryIO]], *,
     Identity defaults to (classname, name), across all input files. Set scope=file
     only when each file is intentionally a separate result population. The
     alternative suite-class-name identity includes the complete suite lineage.
-    Neither mode claims to emulate every CI consumer.
+    gitlab models the pinned consumer key/status buckets for explicitly named suites.
+    No mode claims to emulate every CI consumer.
     """
-    if identity not in {"class-name", "suite-class-name"}:
+    if identity not in {"class-name", "suite-class-name", "gitlab"}:
         raise ValueError("Unknown identity mode")
     if scope not in {"all", "file"}:
         raise ValueError("Unknown scope")
@@ -216,7 +240,8 @@ def inspect_reports(reports: Iterable[tuple[str, BinaryIO]], *,
                 max_depth=limits.max_depth, max_identity_chars=limits.max_identity_chars,
                 max_files=limits.max_files,
             )
-            cases, size = parse_report(stream, source, file_limits)
+            cases, size = parse_report(stream, source, file_limits,
+                                       gitlab_profile=identity == "gitlab")
         except InputError as exc:
             invalid = True
             files.append({"source": source, "status": "invalid"})
@@ -231,6 +256,10 @@ def inspect_reports(reports: Iterable[tuple[str, BinaryIO]], *,
             key = ((source if scope == "file" else ""),
                    case.suites if identity == "suite-class-name" else (),
                    case.classname, case.name)
+            if identity == "gitlab":
+                joined = f"{case.suites[-1]}_{case.classname}_{case.name}"
+                # GitLab stores SHA-256 keys in separate outcome buckets.
+                key = (key[0], (), hashlib.sha256(joined.encode("utf-8")).hexdigest(), case.status)
             groups[key].append(case)
             retry_cases += case.retry_metadata
 
@@ -248,6 +277,8 @@ def inspect_reports(reports: Iterable[tuple[str, BinaryIO]], *,
             "potential_hidden_failure": has_failure and has_nonfailure,
             "occurrences": [case.location() for case in cases],
         }
+        if identity == "gitlab":
+            collision["identity"] = {"consumer_key_sha256": key[2], "outcome": key[3]}
         if identity == "suite-class-name":
             collision["identity"]["suites"] = list(key[1])
         if scope == "file":

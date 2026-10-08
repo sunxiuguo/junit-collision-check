@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- Synthetic: a collision is not proof that this consumer hides a failure. -->
+<testsuite name="synthetic">
+  <testcase classname="Links" name="same"><failure message="synthetic failure" /></testcase>
+  <testcase classname="Links" name="same" />
+</testsuite>

@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<testsuite name="synthetic">
+  <testcase classname="Links" name="a-occurrence" file="a.md"><failure message="synthetic first" /></testcase>
+  <testcase classname="Links" name="b-occurrence" file="b.md"><failure message="synthetic second" /></testcase>
+</testsuite>
