@@ -132,7 +132,9 @@ Pin the tools checkout to a reviewed commit. There is no automatic code download
 For a runnable example with **real pytest-generated reports**, see
 [Keep test failures and identity collisions as separate gates](examples/pytest-ci/).
 It verifies disjoint shards, overlapping shards, unique failures and conflicting
-attempts, and includes a GitHub Actions recipe that preserves test failures.
+attempts. It includes [GitHub Actions](examples/pytest-ci/#minimal-github-actions-recipe)
+and [GitLab CI](examples/pytest-ci/#minimal-gitlab-ci-recipe) recipes that preserve
+test failures while checking report identities.
 
 ## Python API
 

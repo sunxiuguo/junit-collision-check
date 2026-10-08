@@ -76,6 +76,66 @@ For separate jobs, retain both the test job and audit job as required checks.
 An audit job depending on a failed test job also needs an explicit post-failure
 condition. This snippet covers a single job, not artifact aggregation across jobs.
 
+## Minimal GitLab CI recipe
+
+GitLab's [unit-test-report documentation](https://docs.gitlab.com/ci/testing/unit_test_reports/)
+warns that duplicate test names can hide results. Uploading a JUnit report does
+not decide whether a job passed: the job's script must retain a failing status.
+
+This example is for one Linux/POSIX-shell job and one result population. Python
+3.12+ with Expat 2.6.0+, pytest, and your application must already be installed.
+A reviewed, pinned checkout of this auditor must already be available at
+`tools/junit-collision-check`. Replace `tests` with your test selection. Start
+with a fresh `test-results` directory; do not restore it from an earlier run.
+
+```yaml
+test-and-audit:
+  stage: test
+  script:
+    - |
+      test_status=0
+      python -m pytest tests --junitxml=test-results/junit.xml || test_status=$?
+      audit_status=0
+      python tools/junit-collision-check/scripts/check_reports.py 'test-results/**/*.xml' || audit_status=$?
+      printf 'pytest exit: %s; identity audit exit: %s\n' "$test_status" "$audit_status"
+      if [ "$test_status" -ne 0 ]; then
+        exit "$test_status"
+      fi
+      exit "$audit_status"
+  artifacts:
+    when: always
+    paths:
+      - test-results/
+    reports:
+      junit: test-results/**/*.xml
+```
+
+The audit still runs after an ordinary test-command failure. The job keeps the
+test exit code when tests fail, otherwise it keeps the audit exit code. A
+unique failing test therefore stays red even when the audit is clean. A
+collision, unreadable or invalid XML, or a missing report also keeps the job
+red when the test command succeeds. The log prints both statuses if both fail.
+
+The `|| variable=$?` clauses deliberately [capture each exit code](https://docs.gitlab.com/ci/yaml/script/#ignore-non-zero-exit-codes)
+until the final exit; they do not discard it. Keep this as a single literal
+script block and do not set `allow_failure: true`. Do not put the gate only in
+[`after_script`](https://docs.gitlab.com/ci/yaml/#after_script): a failure there
+does not change a successful main script into a failed job.
+
+`reports:junit` sends XML to GitLab's report UI on job success or failure;
+`paths` plus `when: always` also keeps a browsable copy after ordinary failure.
+These settings upload the original reports, which may contain test output or
+private data; apply your project's access and retention policy before using
+them. A timeout, cancellation, runner failure, or
+artifact-upload failure can interrupt these steps; this snippet does not
+guarantee report retention in those cases.
+
+This recipe does not collect artifacts across jobs or emulate GitLab's report
+parser. Keep independent OS/Python populations separate as described below.
+The shell exit behavior was checked locally with real pytest-generated reports
+from synthetic tests and with injected test-command exit statuses. No hosted
+GitLab pipeline, CI Lint, or GitLab report-ingestion test has been run for this recipe.
+
 ## Keep matrix populations separate
 
 The two overlapping reports deliberately have **different suite labels and
@@ -100,4 +160,4 @@ actually belong to one population.
 The `pytest-example` CI job checks generated XML and the four expected exit-code
 combinations. It does not exercise a deliberately failing production workflow or
 prove a particular downstream JUnit consumer's deduplication behavior. The
-production recipe follows GitHub's documented step semantics.
+GitHub Actions recipe follows GitHub's documented step semantics.
