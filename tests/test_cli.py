@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import tomllib
 
 from junit_collision_check.cli import render_text
 from junit_collision_check import inspect_reports
@@ -102,7 +103,9 @@ class CliTests(unittest.TestCase):
     def test_version(self):
         r = self.run_cli('--version')
         self.assertEqual(r.returncode, 0)
-        self.assertEqual(r.stdout.strip(), '0.1.0')
+        self.assertEqual(r.stdout.strip(), '0.2.0a1')
+        metadata = tomllib.loads((ROOT / 'pyproject.toml').read_text(encoding='utf-8'))
+        self.assertEqual(r.stdout.strip(), metadata['project']['version'])
 
     def test_no_reports_usage_error(self):
         self.assertEqual(self.run_cli().returncode, 2)
