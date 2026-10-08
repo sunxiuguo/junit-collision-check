@@ -134,6 +134,11 @@ For a runnable example with **real pytest-generated reports**, see
 It verifies disjoint shards, overlapping shards, unique failures and conflicting
 attempts, and includes a GitHub Actions recipe that preserves test failures.
 
+For **shortened nested test names**, see
+[Catch collisions after names are shortened](examples/nested-test-names/). It pairs
+colliding sibling names with a distinct-name control and shows why a unique but
+truncated name needs a separate producer assertion.
+
 ## Python API
 
 ```python
