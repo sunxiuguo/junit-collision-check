@@ -1,15 +1,20 @@
 # Problem and alternatives
 
-Checked 2026-10-05. This is a narrow engineering hypothesis, not proven adoption.
+Initial research checked 2026-10-05; retry-plugin evidence refreshed 2026-10-09.
+This is a narrow engineering hypothesis, not proven adoption.
 
 ## Evidence
 
 [ProgramBench #64](https://github.com/facebookresearch/ProgramBench/issues/64),
 opened 2026-09-04, reports that pytest-rerunfailures 16.6.1 can emit several records
 for one logical test, including apparent passes before the final failure. The
-consumer counted the records separately. The linked fix PR belongs upstream;
-this tool neither claims authorship of that fix nor reproduces the installed
-plugin here. Our demonstration models the reported artifact shape synthetically.
+consumer counted the records separately. The basic demonstration models the
+artifact shape synthetically; the optional [installed-plugin experiment](../examples/pytest-rerunfailures/)
+now verifies actual reports from versions 16.4, 16.6, 16.6.1 and 16.7. ProgramBench
+already pins new evaluator runs to 16.4, so an open issue does not imply its
+current default remains exposed. The linked fix PR belongs upstream; this tool
+claims neither authorship nor production impact. See the example for the exact
+component-test scope and neighboring controls.
 
 [Kubescape #3007](https://github.com/kubescape/kubescape/issues/3007), opened
 2026-08-11 and completed 2026-08-14, reports duplicate display names in JUnit
