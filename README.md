@@ -141,6 +141,11 @@ attempts. It includes [GitHub Actions](examples/pytest-ci/#minimal-github-action
 and [GitLab CI](examples/pytest-ci/#minimal-gitlab-ci-recipe) recipes that preserve
 test failures while checking report identities.
 
+For a **synthetic link-checker example**, see
+[Keep distinct link occurrences visible](examples/link-occurrence/). It shows why
+different testcase `file` attributes do not distinguish identical names, and why
+an identity-clean report can still contain failed tests.
+
 ## Python API
 
 ```python
