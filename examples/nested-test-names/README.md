@@ -47,18 +47,31 @@ and expected counts in the producer's regression tests as well.
 
 ## Source and next validation
 
-Checked 2026-10-08: [Expecto #534](https://github.com/haf/expecto/issues/534) is open.
-The reporter describes version 10.2.3 and offers to contribute a fix. At inspected
+Historical check, 2026-10-08: [Expecto #534](https://github.com/haf/expecto/issues/534) was open.
+The reporter described version 10.2.3 and offered to contribute a fix. At inspected
 main commit [`cec2c63`](https://github.com/haf/expecto/blob/cec2c63c8d77c6c21bf7e35d903020f74ddc1cea/Expecto/TestResults.fs#L148),
 the JUnit writer passes `flatTest.name` directly to `XAttribute`, emits no classname,
 and puts cases in one assembly-named suite. The NUnit writer uses the same name
 conversion. This auditor supports JUnit, not NUnit reports.
 
-The after fixture is a proposed distinct-name control. It is not output captured
-from an upstream fix, proof that a released version is fixed, or adoption evidence.
-The next producer-level check should generate reports from two sibling tests that
-share three name segments and differ in the fourth, assert both full names, and
-verify the same test outcomes remain present. Include the isolated truncated-name
-case to keep the producer's name assertion separate from this collision audit.
+Checked 2026-10-15: #534 is closed as completed. The native fix,
+[Expecto #535](https://github.com/haf/expecto/pull/535), merged on
+2026-10-09 at 13:31:47 UTC as
+[`89f3419`](https://github.com/haf/expecto/commit/89f341905efcb86b331fe68086213baa37f06e52).
+It formats names with the configured `JoinWith` and preserves the existing writer
+entry points with a default dot separator. The maintainer
+[reported publication in NuGet 11.1.1](https://github.com/haf/expecto/pull/535#issuecomment-6082471812).
+That is a release statement, not package-level verification performed here.
+This example records a historical defect, not a currently unfixed upstream gap.
+
+The after fixture remains a synthetic distinct-name control. It is not output
+captured from an upstream fix, proof that a released version is fixed, or adoption
+evidence. An optional version-specific producer check could compare the reported
+10.2.3 behavior with 11.1.1 using two sibling tests that share three name segments
+and differ in the fourth. Capture the actual reports, assert exact emitted names
+and preserved test outcomes, then run this auditor separately. Include an isolated
+truncated-name case to keep the producer's name assertion separate from this
+collision audit. No such producer run or hosted-consumer check has been performed
+in this example.
 
 No repair, report rewriting, retry inference, or upstream patch is included.
