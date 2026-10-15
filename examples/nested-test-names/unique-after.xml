@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Proposed distinct-name control, not output from a released Expecto fix. -->
+<testsuites>
+  <testsuite name="SyntheticNestedTests">
+    <testcase name="a.b.c.d" time="0.020"><failure message="SYNTHETIC_FAILURE_PRIVATE_DETAIL" /></testcase>
+    <testcase name="a.b.c.e" time="0.010" />
+  </testsuite>
+</testsuites>

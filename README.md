@@ -141,6 +141,11 @@ attempts. It includes [GitHub Actions](examples/pytest-ci/#minimal-github-action
 and [GitLab CI](examples/pytest-ci/#minimal-gitlab-ci-recipe) recipes that preserve
 test failures while checking report identities.
 
+For **shortened nested test names**, see
+[Catch collisions after names are shortened](examples/nested-test-names/). It pairs
+colliding sibling names with a distinct-name control and shows why a unique but
+truncated name needs a separate producer assertion.
+
 ## Python API
 
 ```python

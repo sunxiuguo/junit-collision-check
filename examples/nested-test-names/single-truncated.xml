@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A deliberately truncated name with no second occurrence to collide with. -->
+<testsuites>
+  <testsuite name="SyntheticNestedTests">
+    <testcase name="[a; b; c; ... ]" time="0.010" />
+  </testsuite>
+</testsuites>
