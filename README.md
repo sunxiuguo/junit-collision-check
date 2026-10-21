@@ -1,5 +1,7 @@
 # junit-collision-check
 
+![Same identity. Different outcomes. Audit JUnit XML before a consumer collapses duplicate records. Illustrative workflow, not a screenshot. A collision-free result is not a passing test run.](docs/workflow.svg)
+
 **Find the test failures that duplicate JUnit identities can hide.**
 
 A small, offline Python CLI for teams combining JUnit XML from shards, retries,
@@ -200,3 +202,4 @@ unchanged inputs. CI runs the suite on Linux, macOS and Windows with Python 3.12
 alone is not evidence of a passing run.
 
 [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)
+
