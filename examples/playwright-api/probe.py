@@ -49,6 +49,12 @@ def run(command, env, log):
     return result.returncode
 
 
+def require(condition: bool, detail: str) -> None:
+    """Keep acceptance checks enabled even when Python assertions are stripped."""
+    if not condition:
+        raise RuntimeError(detail)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--auditor-python', required=True)
@@ -77,7 +83,7 @@ def main():
                 fresh_report = Path(temporary) / 'report.xml'
                 env = {**base_env, 'CASE': case, 'PREFIX': prefix, 'REPORT': str(fresh_report)}
                 code = run(cli + extra, env, out / f'{name}.log')
-                assert code == expected_exit, (name, code, expected_exit)
+                require(code == expected_exit, f"{name}: expected runner exit {expected_exit}, got {code}")
                 report.write_bytes(fresh_report.read_bytes())
             tree = ET.parse(report)
             cases = tree.findall('.//testcase')
@@ -94,8 +100,8 @@ def main():
             command = [args.auditor_python, '-m', 'junit_collision_check', '--format=json', *[str(out / f) for f in files]]
             before = {file: hashlib.sha256((out / file).read_bytes()).hexdigest() for file in files}
             result = subprocess.run(command, cwd=ROOT, env=base_env, capture_output=True, text=True, timeout=30)
-            assert result.returncode == expected_exit, (name, result.returncode, result.stdout, result.stderr)
-            assert before == {file: hashlib.sha256((out / file).read_bytes()).hexdigest() for file in files}
+            require(result.returncode == expected_exit, f"{name}: expected auditor exit {expected_exit}, got {result.returncode}: {result.stdout}{result.stderr}")
+            require(before == {file: hashlib.sha256((out / file).read_bytes()).hexdigest() for file in files}, f"{name}: auditor changed input XML")
             audit = json.loads(result.stdout)
             expected = {
                 'default': (4, 2, 2, 2, 0),
@@ -106,15 +112,15 @@ def main():
                 'overlap-control': (8, 4, 4, 4, 0),
             }[name]
             fields = ('testcases', 'unique_identities', 'duplicate_records', 'collision_groups', 'cases_with_retry_metadata')
-            assert tuple(audit['summary'][key] for key in fields) == expected, (name, audit)
-            assert audit['diagnostics'] == [] and audit['summary']['potential_hidden_failure_groups'] == 0
+            require(tuple(audit['summary'][key] for key in fields) == expected, f"{name}: unexpected audit counts: {audit}")
+            require(audit['diagnostics'] == [] and audit['summary']['potential_hidden_failure_groups'] == 0, f"{name}: unexpected diagnostics or hidden failures: {audit}")
             (out / f'audit-{name}.json').write_text(result.stdout)
             summaries.append({'audit': name, 'exit': result.returncode, 'inputs': files, 'result': audit})
         retry = next(x for x in summaries if x.get('scenario') == 'retry')
-        assert retry['records'] == 2 and retry['retry_metadata_count'] == 2 and retry['failed_records'] == 0
+        require(retry['records'] == 2 and retry['retry_metadata_count'] == 2 and retry['failed_records'] == 0, f"retry: unexpected metadata or outcomes: {retry}")
         failure = next(x for x in summaries if x.get('scenario') == 'final-failure')
-        assert failure['records'] == 1 and failure['failed_records'] == 1
-        assert len(Handler.calls) == 17, Handler.calls
+        require(failure['records'] == 1 and failure['failed_records'] == 1, f"final-failure: unexpected outcomes: {failure}")
+        require(len(Handler.calls) == 17, f"expected 17 HTTP requests, got {len(Handler.calls)}: {Handler.calls}")
         (out / 'http-calls.json').write_text(json.dumps(Handler.calls, indent=2) + '\n')
         (out / 'results.json').write_text(json.dumps({'producer': '@playwright/test 1.64.1', 'consumer': 'junit-collision-check 0.2.0a1', 'synthetic_http_requests': len(Handler.calls), 'browser_launched': False, 'scenarios': summaries}, indent=2) + '\n')
         print(json.dumps({'scenario_count': len(scenarios), 'audit_count': 6, 'synthetic_http_requests': len(Handler.calls), 'result': 'passed'}))

@@ -32,6 +32,9 @@ parent environment. Synthetic XML, audit JSON and logs are written to
 must create a fresh report, so a stale XML file cannot make a failed invocation
 appear to have produced a report. The verifier also checks that audits leave XML
 bytes unchanged.
+These acceptance checks remain enabled with Python optimization flags or the
+PYTHONOPTIMIZE environment variable; unexpected outcomes raise an error instead
+of reporting success.
 
 ## Expected results
 
