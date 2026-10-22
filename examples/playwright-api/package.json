@@ -1,0 +1,1 @@
+{"name":"synthetic-playwright-junit-consumer","version":"0.0.0","private":true,"type":"module","dependencies":{"@playwright/test":"1.64.1"}}
