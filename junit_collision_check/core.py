@@ -59,8 +59,8 @@ _GITLAB_ATTRIBUTES = {
     "testsuites": {"name", "time", "tests", "failures", "errors", "skipped", "disabled"},
     "testsuite": {"name", "time", "tests", "failures", "errors", "skipped", "disabled",
                   "timestamp", "hostname", "package", "id", "file", "assertions"},
-    "testcase": {"name", "classname", "file", "line", "time", "assertions"},
-    "failure": {"message"}, "error": {"message"}, "skipped": {"message"},
+    "testcase": {"name", "classname", "file", "line", "time", "assertions", "testId", "runId"},
+    "failure": {"message", "type"}, "error": {"message"}, "skipped": {"message"},
     "system-out": set(), "system-err": set(), "properties": set(),
     "property": {"name", "value"},
 }
@@ -110,6 +110,10 @@ def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None, *,
         if gitlab_profile:
             if namespace or name not in _GITLAB_ATTRIBUTES or set(attrs) - _GITLAB_ATTRIBUTES[name]:
                 fail("UNSUPPORTED_GITLAB_PROFILE", "Element or attribute is outside the supported GitLab profile")
+            # Pinned XML-converter evidence covers this literal, not arbitrary types.
+            # Reserved types can coerce content or abort the consumer's entire suite.
+            if name == "failure" and "type" in attrs and attrs["type"] != "failed":
+                fail("UNSUPPORTED_GITLAB_PROFILE", "Failure type is outside the supported GitLab profile")
             if name == "testsuite" and not attrs.get("name", "").strip():
                 fail("UNSUPPORTED_GITLAB_PROFILE", "GitLab profile requires explicitly named suites")
         if not stack:

@@ -41,6 +41,88 @@ class GitlabProfileTests(unittest.TestCase):
         identity = report['collisions'][0]['identity']
         self.assertEqual(identity, {'consumer_key_sha256': hashlib.sha256(b'synthetic_A_B_C').hexdigest(), 'outcome': 'passed'})
 
+    def test_testsprite_renderer_fixtures(self):
+        for name, expected_exit, retained in [('testsprite-before', 1, 1), ('testsprite-pr521', 0, 2)]:
+            path = EXAMPLES / (name + '.xml')
+            original = path.read_bytes()
+            with self.subTest(name=name):
+                result = subprocess.run([sys.executable, '-m', 'junit_collision_check',
+                    str(path), '--identity', 'gitlab', '--format', 'json'], cwd=ROOT,
+                    text=True, capture_output=True, timeout=10)
+                self.assertEqual(result.returncode, expected_exit, result.stdout + result.stderr)
+                report = json.loads(result.stdout)
+                self.assertEqual(report['summary']['testcases'], 2)
+                self.assertEqual(report['summary']['unique_identities'], retained)
+                self.assertEqual(report['summary']['potential_hidden_failure_groups'], 0)
+                self.assertEqual(report['diagnostics'], [])
+                self.assertNotIn('synthetic-run-', result.stdout)
+                self.assertNotIn('"testId"', result.stdout)
+                self.assertNotIn('"runId"', result.stdout)
+                self.assertNotIn('status: failed', result.stdout)
+                self.assertEqual(original, path.read_bytes())
+
+    def test_metadata_is_not_an_identity_component(self):
+        report = self.inspect('<testsuite name="s"><testcase name="x" testId="a" runId="r"/>'
+                              '<testcase name="x" testId="b" runId="s"/></testsuite>')
+        self.assertEqual(report['status'], 'issues')
+        self.assertEqual(report['summary']['duplicate_records'], 1)
+        self.assertEqual(report['collisions'][0]['identity'], {
+            'consumer_key_sha256': hashlib.sha256(b's__x').hexdigest(), 'outcome': 'passed'})
+
+    def test_literal_failed_type_preserves_key_and_outcome_buckets(self):
+        for second, count in [('<failure type="failed">status: failed</failure>', 1), ('', 2)]:
+            with self.subTest(second=second):
+                report = self.inspect('<testsuite name="s"><testcase classname="c" name="x" testId="a">'
+                    '<failure type="failed" message="synthetic">status: failed</failure></testcase>'
+                    f'<testcase classname="c" name="x" runId="b">{second}</testcase></testsuite>')
+                self.assertEqual(report['summary']['unique_identities'], count)
+                self.assertEqual(report['summary']['potential_hidden_failure_groups'], 0)
+                self.assertEqual(report['status'], 'issues' if count == 1 else 'clean')
+
+    def test_literal_failed_type_with_empty_and_whitespace_content(self):
+        for body in ['', ' ', 'status: failed', '<![CDATA[status: failed]]>']:
+            with self.subTest(body=body):
+                report = self.inspect('<testsuite name="s"><testcase name="x" testId="a" runId="r">'
+                    f'<failure type="failed">{body}</failure></testcase></testsuite>')
+                self.assertEqual(report['status'], 'clean')
+                self.assertEqual(report['summary']['testcases'], 1)
+
+    def test_metadata_and_literal_type_do_not_disambiguate_joined_keys(self):
+        report = self.inspect('<testsuite name="s"><testcase classname="A_B" name="C" testId="a">'
+            '<failure type="failed"/></testcase><testcase classname="A" name="B_C" runId="b">'
+            '<failure type="failed"/></testcase></testsuite>')
+        self.assertEqual(report['status'], 'issues')
+        self.assertEqual(report['collisions'][0]['identity'], {
+            'consumer_key_sha256': hashlib.sha256(b's_A_B_C').hexdigest(), 'outcome': 'failure'})
+
+    def test_other_converter_types_remain_unsupported(self):
+        for value in ['symbol', 'yaml', 'array', 'date', 'datetime', 'dateTime', 'duration',
+                      'integer', 'float', 'double', 'decimal', 'boolean', 'string',
+                      'base64Binary', 'hexBinary', 'binary', 'file', 'unknown-type',
+                      '', 'Failed', 'FAILED', ' failed ', 'failed&#10;']:
+            with self.subTest(value=value):
+                report = self.inspect('<testsuite name="s"><testcase name="x" testId="a" runId="r">'
+                    f'<failure type="{value}">status: failed</failure></testcase></testsuite>')
+                self.assertEqual(report['status'], 'invalid')
+                self.assertEqual(report['diagnostics'][0]['code'], 'UNSUPPORTED_GITLAB_PROFILE')
+
+    def test_new_attributes_remain_limited_to_their_proven_context(self):
+        for xml in [
+            '<testsuite name="s" testId="a"><testcase name="x"/></testsuite>',
+            '<testsuite name="s"><testcase name="x" type="failed"/></testsuite>',
+            '<testsuite name="s"><testcase name="x" testId="a"><error type="failed"/></testcase></testsuite>',
+            '<testsuite name="s"><testcase name="x" runId="r"><skipped type="failed"/></testcase></testsuite>',
+            '<testsuite name="s"><testcase name="x" testId="a"><failure type="failed" nil="true"/></testcase></testsuite>',
+            '<testsuite name="s"><testcase name="x" testId="a" failure="oops"/></testsuite>',
+            '<testsuite name="s"><testcase name="x" testId="a">payload</testcase></testsuite>',
+            '<testsuite><testcase name="x" testId="a"/></testsuite>',
+            '<testsuite name="s" xmlns="urn:test"><testcase name="x" testId="a"/></testsuite>',
+        ]:
+            with self.subTest(xml=xml):
+                report = self.inspect(xml)
+                self.assertEqual(report['status'], 'invalid')
+                self.assertEqual(report['diagnostics'][0]['code'], 'UNSUPPORTED_GITLAB_PROFILE')
+
     def test_separate_outcome_buckets(self):
         xml = '<testsuite name="s">' + ''.join('<testcase name="a">' + tag + '</testcase>' for tag in ['', '<failure/>', '<error/>', '<skipped/>']) + '</testsuite>'
         self.assertEqual(self.inspect(xml)['summary']['unique_identities'], 4)

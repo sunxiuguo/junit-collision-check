@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="testsprite:testlist:synthetic-list" tests="2" failures="2" errors="0" skipped="0" time="5">
+    <testcase classname="testlist:synthetic-list" name="Checkout [synthetic-test-a]" testId="synthetic-test-a" runId="synthetic-run-a" time="2.5">
+      <failure message="failed" type="failed">status: failed
+runId: synthetic-run-a</failure>
+    </testcase>
+    <testcase classname="testlist:synthetic-list" name="Checkout [synthetic-test-b]" testId="synthetic-test-b" runId="synthetic-run-b" time="2.5">
+      <failure message="failed" type="failed">status: failed
+runId: synthetic-run-b</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
