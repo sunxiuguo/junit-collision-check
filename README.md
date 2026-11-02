@@ -143,6 +143,10 @@ attempts. It includes [GitHub Actions](examples/pytest-ci/#minimal-github-action
 and [GitLab CI](examples/pytest-ci/#minimal-gitlab-ci-recipe) recipes that preserve
 test failures while checking report identities.
 
+For a JavaScript producer, the [Playwright API-only example](examples/playwright-api/)
+generates real multi-project and sharded JUnit reports, verifies the existing
+project-name setting, and keeps successful retries separate from collisions.
+
 ## Python API
 
 ```python
