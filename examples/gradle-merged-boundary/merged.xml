@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- Minimized synthetic illustration, not a raw Gradle artifact. -->
+<testsuite name="MethodTest" tests="2" failures="1" errors="0" skipped="0">
+  <testcase classname="MethodTest" name="[1] size = 2">
+    <flakyFailure message="synthetic failing method" type="AssertionError"/>
+  </testcase>
+</testsuite>

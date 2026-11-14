@@ -181,6 +181,13 @@ This project audits generated artifacts; it does not replace upstream fixes.
 
 ## Limits and privacy
 
+A `clean` result only describes duplicate identities in parsed records, not test
+success or report completeness. If the producer already merged distinct tests,
+the auditor cannot reconstruct them. See the [Gradle merged-report boundary](examples/gradle-merged-boundary/)
+for a verified limitation and a runnable synthetic illustration. Retry metadata
+alone does not prove a collision.
+
+
 Supported: a `testsuite` root, a `testsuites` root containing suites, nested suites,
 and consistent namespaces. DTDs and custom entities are rejected. External entities
 are never resolved. Parsing is streamed; failure bodies, logs and attachment content
