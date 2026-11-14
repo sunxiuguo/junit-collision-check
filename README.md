@@ -148,6 +148,11 @@ check](examples/junit-parameterized-class/) generates real legacy XML with pinne
 6.0.3 and 6.1.3 artifacts. It reproduces an already-fixed historical collision
 and verifies the clean upgraded control; it does not claim current JUnit is broken.
 
+For named Vitest projects sharing file and test titles, see the
+[project-identity example](examples/vitest-projects/). It pairs an offline audit
+with a built-in reporter configuration and a tested converter/consumer boundary;
+it does not claim complete historical reporting or selective reruns.
+
 ## Python API
 
 ```python

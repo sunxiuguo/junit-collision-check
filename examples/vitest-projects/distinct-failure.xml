@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimized synthetic control: clean identities do not imply passing tests. -->
+<testsuites tests="4" failures="1" errors="0">
+  <testsuite name="same.test.js" tests="2" failures="0" errors="0" skipped="1">
+    <testcase classname="project-a:same.test.js" name="shared suite &gt; same test"/>
+    <testcase classname="project-a:same.test.js" name="shared suite &gt; skipped"><skipped/></testcase>
+  </testsuite>
+  <testsuite name="same.test.js" tests="2" failures="1" errors="0" skipped="1">
+    <testcase classname="project-b:same.test.js" name="shared suite &gt; same test"><failure message="synthetic expected b to equal a"/></testcase>
+    <testcase classname="project-b:same.test.js" name="shared suite &gt; skipped"><skipped/></testcase>
+  </testsuite>
+</testsuites>

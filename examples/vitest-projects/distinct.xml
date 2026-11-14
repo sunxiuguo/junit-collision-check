@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimized synthetic illustration of native Vitest 5.0.3 output. -->
+<testsuites tests="2" failures="0" errors="0">
+  <testsuite name="same.test.js" tests="1" failures="0" errors="0" skipped="0">
+    <testcase classname="project-a:same.test.js" name="shared suite &gt; same test"/>
+  </testsuite>
+  <testsuite name="same.test.js" tests="1" failures="0" errors="0" skipped="0">
+    <testcase classname="project-b:same.test.js" name="shared suite &gt; same test"/>
+  </testsuite>
+</testsuites>
