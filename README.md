@@ -143,6 +143,11 @@ attempts. It includes [GitHub Actions](examples/pytest-ci/#minimal-github-action
 and [GitLab CI](examples/pytest-ci/#minimal-gitlab-ci-recipe) recipes that preserve
 test failures while checking report identities.
 
+For a second producer ecosystem, the optional [JUnit parameterized-class upgrade
+check](examples/junit-parameterized-class/) generates real legacy XML with pinned
+6.0.3 and 6.1.3 artifacts. It reproduces an already-fixed historical collision
+and verifies the clean upgraded control; it does not claim current JUnit is broken.
+
 ## Python API
 
 ```python
