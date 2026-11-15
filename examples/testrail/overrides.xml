@@ -1,0 +1,4 @@
+<testsuite name="synthetic">
+  <testcase classname="a.b" name="c" custom_automation_id="first"/>
+  <testcase classname="a" name="b.c"><properties><property name="testrail_case_field" value="custom_automation_id:second"/></properties></testcase>
+</testsuite>

@@ -220,3 +220,11 @@ alone is not evidence of a passing run.
 
 [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)
 
+
+### Optional TestRail auto-matcher preflight
+
+`--identity testrail` audits a bounded effective-automation-ID profile without
+changing the default tuple identity or contacting TestRail. See the
+[version-pinned scope and exclusions](docs/testrail.md) and run
+`python examples/testrail/verify.py`. Explicit stable IDs can resolve dot-joined
+name ambiguity; this preflight does not prove server import behavior.
