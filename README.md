@@ -173,8 +173,12 @@ See [input and output contract](docs/contract.md).
 
 - [ProgramBench #64](https://github.com/facebookresearch/ProgramBench/issues/64)
   describes retry records causing a failed test to contribute passing records to
-  a score. It was open when checked on 2026-10-05, with an upstream fix proposed
-  in [#63](https://github.com/facebookresearch/ProgramBench/pull/63)
+  a score. Checked on 2026-11-17: the issue remains open, but main pins the
+  plugin to 16.4 and proposed fix [#63](https://github.com/facebookresearch/ProgramBench/pull/63)
+  was closed as superseded. The separate dependency-freeze proposal
+  [#70](https://github.com/facebookresearch/ProgramBench/pull/70) remains open.
+  This is historical failure-class evidence, not a claim that current main
+  reproduces the original failure
 - [Kubescape #3007](https://github.com/kubescape/kubescape/issues/3007) documented
   multiple controls sharing JUnit identities. That issue is completed; it is
   historical evidence for this failure class, not an unresolved bug claim
