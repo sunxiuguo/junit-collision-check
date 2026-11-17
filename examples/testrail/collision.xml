@@ -1,0 +1,4 @@
+<testsuite name="synthetic">
+  <testcase classname="a.b" name="c"/>
+  <testcase classname="a" name="b.c"><failure>synthetic failure</failure></testcase>
+</testsuite>

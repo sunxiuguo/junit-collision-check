@@ -26,6 +26,8 @@ def render_text(report):
         identity = collision["identity"]
         if report["identity_mode"] == "gitlab":
             lines.append(f"{collision['code']}: GitLab key {_quoted(identity['consumer_key_sha256'])} / {_quoted(identity['outcome'])}")
+        elif report["identity_mode"] == "testrail":
+            lines.append(f"{collision['code']}: TestRail key {_quoted(identity['consumer_key_sha256'])}")
         else:
             lines.append(f"{collision['code']}: {_quoted(identity['classname'])} / {_quoted(identity['name'])}")
         if collision["potential_hidden_failure"]:
@@ -78,7 +80,7 @@ def main(argv=None):
         description="Find JUnit identity collisions across local XML reports without changing them.")
     parser.add_argument("reports", nargs="+", help="Report paths or quoted glob patterns (no URLs)")
     parser.add_argument("--format", choices=["text", "json"], default="text")
-    parser.add_argument("--identity", choices=["class-name", "suite-class-name", "gitlab"], default="class-name")
+    parser.add_argument("--identity", choices=["class-name", "suite-class-name", "gitlab", "testrail"], default="class-name")
     parser.add_argument("--scope", choices=["all", "file"], default="all",
                         help="Use file only if every input is a separate result population")
     parser.add_argument("--version", action="version", version=__version__)

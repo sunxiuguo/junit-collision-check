@@ -39,6 +39,8 @@ class Case:
     status: str
     retry_metadata: bool = False
 
+    testrail_id: str = ""
+
     def location(self):
         return {
             "source": self.source,
@@ -71,7 +73,7 @@ def _split_name(name):
 
 
 def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None, *,
-                 gitlab_profile: bool = False):
+                 gitlab_profile: bool = False, testrail_profile: bool = False):
     """Return (cases, byte_count) for one complete supported report.
 
     Raises InputError and discards the entire file on malformed/unsupported input.
@@ -107,6 +109,26 @@ def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None, *,
         nonlocal current, root_namespace
         namespace, name = _split_name(expanded)
         parent = stack[-1] if stack else None
+        if testrail_profile:
+            allowed = dict(_GITLAB_ATTRIBUTES)
+            allowed["testcase"] = {"name", "classname", "time", "file", "line", "assertions", "custom_automation_id"}
+            allowed["error"] = {"message", "type"}
+            if namespace or name not in allowed or set(attrs) - allowed[name]:
+                fail("UNSUPPORTED_TESTRAIL_PROFILE", "Element or attribute is outside the supported TestRail profile")
+            if name == "testsuite" and (parent == "testsuite" or not attrs.get("name", "").strip()):
+                fail("UNSUPPORTED_TESTRAIL_PROFILE", "TestRail profile requires flat explicitly named suites")
+            if name == "testcase" and not attrs.get("classname", "").strip():
+                fail("UNSUPPORTED_TESTRAIL_PROFILE", "TestRail profile requires explicit nonempty class names")
+            if name == "properties" and parent != "testcase":
+                fail("UNSUPPORTED_TESTRAIL_PROFILE", "Only testcase-level properties are supported")
+            if name == "property":
+                if parent != "properties" or current is None or attrs.get("name") != "testrail_case_field":
+                    fail("UNSUPPORTED_TESTRAIL_PROFILE", "Only explicit testcase automation-ID properties are supported")
+                value = attrs.get("value", "")
+                prefix = "custom_automation_id:"
+                if not value.startswith(prefix) or value[len(prefix):].startswith("["):
+                    fail("UNSUPPORTED_TESTRAIL_PROFILE", "Only string automation-ID property values are supported")
+                current["_tr_property"] = short(value[len(prefix):])
         if gitlab_profile:
             if namespace or name not in _GITLAB_ATTRIBUTES or set(attrs) - _GITLAB_ATTRIBUTES[name]:
                 fail("UNSUPPORTED_GITLAB_PROFILE", "Element or attribute is outside the supported GitLab profile")
@@ -144,6 +166,9 @@ def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None, *,
                 "classname": short(attrs.get("classname", "")), "name": name_attr,
                 "results": set(), "retry_metadata": False,
             }
+            if testrail_profile:
+                current["_tr_attribute"] = short(attrs.get("custom_automation_id", current["classname"] + "." + name_attr))
+                current["_tr_property"] = ""
         elif name in _TERMINAL | _RETRY:
             if parent != "testcase" or current is None:
                 fail("UNSUPPORTED_STRUCTURE", "Result elements must be direct children of testcase")
@@ -157,6 +182,12 @@ def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None, *,
         nonlocal current
         _, name = _split_name(expanded)
         if name == "testcase":
+            if testrail_profile:
+                value = current.pop("_tr_property") or current.pop("_tr_attribute")
+                current.pop("_tr_attribute", None)
+                current["testrail_id"] = short(value.strip())
+                if not current["testrail_id"]:
+                    fail("EMPTY_TESTRAIL_ID", "TestRail effective automation ID is empty; choose an explicit stable ID")
             results = current.pop("results")
             if len(results) > 1:
                 fail("CONFLICTING_RESULT_ELEMENTS", "A testcase has conflicting terminal result types")
@@ -168,10 +199,12 @@ def parse_report(stream: BinaryIO, source: str, limits: Limits | None = None, *,
         stack.pop()
 
     def character_data(text):
+        if testrail_profile and stack and stack[-1] not in {"failure", "error", "skipped", "system-out", "system-err"} and text.strip():
+            fail("UNSUPPORTED_TESTRAIL_PROFILE", "Text-valued properties or structural text are outside the supported profile")
         if gitlab_profile and stack and stack[-1] in {"testsuites", "testsuite", "testcase"} and text.strip():
             fail("UNSUPPORTED_GITLAB_PROFILE", "Structural text is outside the supported GitLab profile")
 
-    parser.CharacterDataHandler = character_data if gitlab_profile else None
+    parser.CharacterDataHandler = character_data if gitlab_profile or testrail_profile else None
     parser.StartElementHandler = start
     parser.EndElementHandler = end
     parser.StartDoctypeDeclHandler = reject_doctype
@@ -206,9 +239,10 @@ def inspect_reports(reports: Iterable[tuple[str, BinaryIO]], *,
     only when each file is intentionally a separate result population. The
     alternative suite-class-name identity includes the complete suite lineage.
     gitlab models the pinned consumer key/status buckets for explicitly named suites.
+    testrail models a bounded flat JUnit auto-matcher profile; see docs/testrail.md.
     No mode claims to emulate every CI consumer.
     """
-    if identity not in {"class-name", "suite-class-name", "gitlab"}:
+    if identity not in {"class-name", "suite-class-name", "gitlab", "testrail"}:
         raise ValueError("Unknown identity mode")
     if scope not in {"all", "file"}:
         raise ValueError("Unknown scope")
@@ -245,7 +279,8 @@ def inspect_reports(reports: Iterable[tuple[str, BinaryIO]], *,
                 max_files=limits.max_files,
             )
             cases, size = parse_report(stream, source, file_limits,
-                                       gitlab_profile=identity == "gitlab")
+                                       gitlab_profile=identity == "gitlab",
+                                       testrail_profile=identity == "testrail")
         except InputError as exc:
             invalid = True
             files.append({"source": source, "status": "invalid"})
@@ -264,6 +299,8 @@ def inspect_reports(reports: Iterable[tuple[str, BinaryIO]], *,
                 joined = f"{case.suites[-1]}_{case.classname}_{case.name}"
                 # GitLab stores SHA-256 keys in separate outcome buckets.
                 key = (key[0], (), hashlib.sha256(joined.encode("utf-8")).hexdigest(), case.status)
+            if identity == "testrail":
+                key = (key[0], (), hashlib.sha256(case.testrail_id.encode("utf-8")).hexdigest(), "")
             groups[key].append(case)
             retry_cases += case.retry_metadata
 
@@ -283,6 +320,8 @@ def inspect_reports(reports: Iterable[tuple[str, BinaryIO]], *,
         }
         if identity == "gitlab":
             collision["identity"] = {"consumer_key_sha256": key[2], "outcome": key[3]}
+        if identity == "testrail":
+            collision["identity"] = {"consumer_key_sha256": key[2]}
         if identity == "suite-class-name":
             collision["identity"]["suites"] = list(key[1])
         if scope == "file":
