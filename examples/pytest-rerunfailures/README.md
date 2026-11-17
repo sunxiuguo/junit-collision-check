@@ -68,6 +68,30 @@ network controls or production workflow. Error exception classes were placeholde
 on unexercised invalid-input paths. The self-contained example here reproduces
 the producer/auditor portion, not that consumer harness.
 
+### Independent TestRail workflow report
+
+Observed on **2026-11-17**: [pytest-rerunfailures #393](https://github.com/pytest-dev/pytest-rerunfailures/issues/393),
+opened November 11, reports that bare retry entries caused failed tests to appear
+passed in the reporter's TestRail workflow. The reporter removes the earlier bare
+entries before upload and offers to contribute an upstream fix pending guidance.
+The issue was still open with no comments at observation time. This is independent
+evidence of a real workflow problem, **not adoption of this auditor**.
+
+A fresh synthetic check with Python 3.12.14, pytest 9.1.1 and
+pytest-rerunfailures 16.7, against auditor
+[`c2451a3`](https://github.com/sunxiuguo/junit-collision-check/commit/c2451a36f2e0872ad087d5e1a18813be06ca5e3e),
+reproduced the issue's eventual-pass sample with one rerun: two same-identity
+records, audit exit 1, and no potential-hidden-failure flag. An always-failing
+synthetic variant with one rerun also produced two records, but was flagged as
+conflicting outcomes with one potential-hidden-failure group. Both XML files
+remained byte-for-byte unchanged. The four-scenario example above also passed its
+expected-outcome checks for 16.7 and the 16.6 control.
+
+This validates a **pre-upload warning**, not TestRail ingestion, upload ordering,
+or a server-side fix. No TestRail service was contacted. The reporter's Python
+3.13 environment was not reproduced; these checks used Python 3.12.14. Keep the
+pytest exit status as a separate gate, including when the audit exits 0.
+
 The [plugin changelog](https://github.com/pytest-dev/pytest-rerunfailures/blob/master/CHANGES.rst)
 records changed teardown reporting in 16.6.1. This experiment does not assert a
 new upstream bug or prescribe downgrading: use your producer's supported fix or
