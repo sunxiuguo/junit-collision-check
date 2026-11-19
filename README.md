@@ -153,6 +153,11 @@ For named Vitest projects sharing file and test titles, see the
 with a built-in reporter configuration and a tested converter/consumer boundary;
 it does not claim complete historical reporting or selective reruns.
 
+For **shortened nested test names**, see
+[Catch collisions after names are shortened](examples/nested-test-names/). It pairs
+colliding sibling names with a distinct-name control and shows why a unique but
+truncated name needs a separate producer assertion.
+
 ## Python API
 
 ```python
