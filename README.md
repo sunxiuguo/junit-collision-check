@@ -68,6 +68,11 @@ junit-collision-check 'reports/**/*.xml'
 No PyPI publication is assumed by these instructions. The build uses setuptools;
 the installed CLI itself has no dependencies beyond Python's standard library.
 
+The [v0.1.0 release](https://github.com/sunxiuguo/junit-collision-check/releases/tag/v0.1.0)
+supports `class-name` and `suite-class-name`. To use the `gitlab` profile below,
+use a source checkout that includes it. Run `junit-collision-check --help`
+to see which identities your installed version supports.
+
 ### Choose the right identity
 
 For the pinned GitLab source consumer, see the opt-in
