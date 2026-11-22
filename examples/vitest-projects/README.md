@@ -57,6 +57,11 @@ the default collision control. The fixture runs no browser, network request or
 customer test. No installer, automatic download or dependency lockfile is
 provided; check both tool versions yourself rather than silently using `latest`.
 
+## Merging blobs across separate matrix jobs
+
+See the [native blob-merge replay](blob-merge/) for the separate roles of blob
+labels and project names when exporting one JUnit report.
+
 ## Actual consumer check and its limits
 
 On 2026-11-14, native reports were also passed through **python-subunit 1.4.6**
