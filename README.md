@@ -158,6 +158,11 @@ For named Vitest projects sharing file and test titles, see the
 with a built-in reporter configuration and a tested converter/consumer boundary;
 it does not claim complete historical reporting or selective reruns.
 
+For a **synthetic link-checker example**, see
+[Keep distinct link occurrences visible](examples/link-occurrence/). It shows why
+different testcase `file` attributes do not distinguish identical names, and why
+an identity-clean report can still contain failed tests.
+
 ## Python API
 
 ```python
