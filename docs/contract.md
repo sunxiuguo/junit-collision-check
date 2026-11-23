@@ -21,6 +21,21 @@ and a narrower XML subset; unsupported profile inputs fail explicitly. Its
 collision identity contains `consumer_key_sha256` and `outcome`; tuple modes
 retain their existing fields. Default identity and scope are unchanged.
 
+## Opt-in TestRail auto-matcher profile
+
+`identity="testrail"` models the bounded, version-pinned effective automation-ID
+mapping in [the TestRail profile contract](testrail.md). It is for standard JUnit
+auto matching only, with no BDD, manual matcher or global override configuration.
+The caller must establish that configuration; XML alone cannot prove it. The
+profile accepts a narrower flat, non-namespaced shape and rejects unsupported
+metadata rather than guessing. Empty effective IDs are invalid input.
+
+Unlike tuple modes, its collision identity contains only `consumer_key_sha256`,
+the SHA-256 of the effective ID after the documented precedence and whitespace
+normalization. It does not expose the raw override. Outcomes do not partition
+this profile's groups. File scope adds `source` as in other modes. Default tuple
+identity and scope are unchanged; this is not a server import/history guarantee.
+
 ## Stable codes
 
 Collision codes:
@@ -32,7 +47,7 @@ Input diagnostic codes:
 - `NO_REPORTS`, `EMPTY_REPORT_SET`, `DUPLICATE_SOURCE`
 - `INVALID_XML`, `UNSUPPORTED_ROOT`, `UNSUPPORTED_STRUCTURE`, `MIXED_NAMESPACE`
 - `MISSING_TEST_NAME`, `CONFLICTING_RESULT_ELEMENTS`
-- `UNSUPPORTED_GITLAB_PROFILE`
+- `UNSUPPORTED_GITLAB_PROFILE`, `UNSUPPORTED_TESTRAIL_PROFILE`, `EMPTY_TESTRAIL_ID`
 - `FORBIDDEN_DTD`, `FORBIDDEN_ENTITY`, `UNSAFE_XML_RUNTIME`
 - `FILE_SIZE_LIMIT`, `FILE_COUNT_LIMIT`, `CASE_LIMIT`, `TOTAL_LIMIT`, `DEPTH_LIMIT`, `IDENTITY_LIMIT`
 
@@ -48,7 +63,8 @@ The JSON result contains `schema_version`, `status`, `identity_mode`, `scope`,
 contain only `schema_version`, `status` and `diagnostics` because no reliable audit
 was produced. Argument syntax errors use argparse's stderr and exit 2.
 
-A collision includes identity components, outcome names, potential-hidden-failure
+A collision includes identity components (or the consumer hash fields documented
+above for opt-in profiles), outcome names, potential-hidden-failure
 flag, and ordered occurrences. Each occurrence has source, 1-based line, 1-based
 record ordinal in that file, suite lineage, reported status and retry-metadata flag.
 Groups are sorted by identity. Occurrences preserve input order; this order is not
